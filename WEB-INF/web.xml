@@ -14,7 +14,8 @@
   <!-- A context is a variable with application wide scope-->
   <context-param>
     <param-name>LANGUAGE_DATA_SET</param-name>
-    <param-value>data/wili-2018-Edited.txt</param-value>
+    <!-- Configured path to gain access to the file inside the data/ directory -->
+    <param-value>webapps/ngrams/data/wili-2018-Edited.txt</param-value>
   </context-param>
 
   <!-- A servlet class must be bound to a name -->

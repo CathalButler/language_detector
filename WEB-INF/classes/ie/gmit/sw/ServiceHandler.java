@@ -8,11 +8,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 
 /*
@@ -36,10 +36,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ServiceHandler extends HttpServlet {
     private String languageDataSet = null; //This variable  is shared by all HTTP requests for the servlet
-    private static long jobNumber = 0; //The number of the task in the async queue
+    private static int jobNumber = 0; //The number of the task in the async queue
     private File file;
-    private Map<String, Language> outQueue = new ConcurrentHashMap<>();
-    private List<Request> inQueue = new LinkedList<>();
+    static BlockingQueue<Request> inQueue = new LinkedBlockingQueue<>();
+    static Map<Integer, Language> outQueue = new ConcurrentHashMap<>();
+    private int kmar = 1;
+    private DatabaseImpl database = DatabaseImpl.getInstance();
+    private static final Logger LOGGER = Logger.getLogger(ServiceHandler.class.getName());
 
 
     public void init() throws ServletException {
@@ -49,37 +52,40 @@ public class ServiceHandler extends HttpServlet {
         //You can start to build the subject database at this point. The init() method is only ever called once during the life cycle of a servlet
         file = new File(languageDataSet);
 
-        //Start parsing of the Language data set file
-        Parser p = new Parser(file.getPath(), 1);
-        Database db = new Database();
-        //Assign the Database
-        p.setDb(db);
-        Thread t = new Thread(p);
-        //Start a thread for the Parser class
-        t.start();
+        //Start parser on a thread
+        Thread thread = new Thread(new Parser(file.toString(), kmar, database));
+        thread.start();
+
+        LOGGER.info("PARSER COMPLETE, DATABASE BUILT");
+
+        // Wait on parser to complete it process before processing the next step
         try {
-            t.join();
+            thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }//End try catch
-
-        //Starts the Databases class
-        db.resize(300);
+        }
+        //Resize the database to the top 300 n-grams
+        int databaseNgramSize = 300;
+        database.resize(databaseNgramSize);
     }//End init()
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        LOGGER.info("GET REQUEST");
         resp.setContentType("text/html"); //Output the MIME type
         PrintWriter out = resp.getWriter(); //Write out text. We can write out binary too and change the MIME type...
 
         //Initialise some request valuables with the submitted form info. These are local to this method and thread safe...
         String option = req.getParameter("cmbOptions"); //Change options to whatever you think adds value to your assignment...
-        String s = req.getParameter("query");
+        String query = req.getParameter("query");
         String taskNumber = req.getParameter("frmTaskNumber");
+
+        LOGGER.info("TASK NUMBER " + taskNumber);
 
 
         out.print("<html><head><title>Advanced Object Oriented Software Development Assignment</title>");
         out.print("</head>");
         out.print("<body>");
+
 
         if (taskNumber == null) {
             //Assign a new job to the list
@@ -89,16 +95,30 @@ public class ServiceHandler extends HttpServlet {
             //Generate a UUID for each job/task
 //            UUID jobNumber = UUID.randomUUID();
 //            System.out.println(jobNumber.toString());
-            //Add job to in-queue
-            inQueue.add(new Request("Η Αφροδίτη Γραμμέλη αναφέρει μετά την πρεμιέρα ότι το πρώτο δείγμα τηλεθέασης, " +
-                    "αν και νωρίς, είναι πολύ καλό. \"Ο Καπουτζίδης έχει αποδείξει ότι έχει στόφα ταλαντούχου σεναριογράφου που δεν " +
-                    "γράφει απλά για να υπάρχει αλλά για", jobNumber));
+            //Process process = new Process(outQueue, inQueue, file);
+            //process.start();
+
+            try {
+                //Add job to in-queue
+                // make a request
+                inQueue.add(new Request(jobNumber, query));
+                // ... maybe do something concurrently ...
+
+                //Start a thread to run the languageDetection class
+                new Thread(new LanguageDetection(kmar, database)).start();
+
+            } catch (Exception ie) {
+                ie.printStackTrace();
+            }
+
+            //Make a class which will be able to return if the process is complete, try have that class run threads
         } else {
             //Check out-queue for finished job
-            if (outQueue.containsKey(taskNumber)) {
-                out.print("Language: " + outQueue.get(taskNumber));
+            if (outQueue.containsKey(jobNumber)) {
+                out.print("Language: " + outQueue.get(jobNumber));
+                LOGGER.info("Language: " + outQueue.get(jobNumber));
                 //Remove job from out-queue
-                outQueue.remove(taskNumber);
+                outQueue.remove(jobNumber);
             }//end if
         }//end if else
 
@@ -108,8 +128,8 @@ public class ServiceHandler extends HttpServlet {
 
         out.print("<font color=\"#993333\"><b>");
         out.print("Language Dataset is located at " + languageDataSet + " and is <b><u>" + file.length() + "</u></b> bytes in size");
-        out.print("<br>Option(s): " + option);
-        out.print("<br>Query Text : " + s);
+        out.print("<br>Option(query): " + option);
+        out.print("<br>Query Text : " + query);
         out.print("</font><p/>");
 
         out.print("<br>This servlet should only be responsible for handling client request and returning responses. Everything else should be handled by different objects. ");
@@ -130,7 +150,7 @@ public class ServiceHandler extends HttpServlet {
 
         out.print("<form method=\"POST\" name=\"frmRequestDetails\">");
         out.print("<input name=\"cmbOptions\" type=\"hidden\" value=\"" + option + "\">");
-        out.print("<input name=\"query\" type=\"hidden\" value=\"" + s + "\">");
+        out.print("<input name=\"query\" type=\"hidden\" value=\"" + query + "\">");
         out.print("<input name=\"frmTaskNumber\" type=\"hidden\" value=\"" + taskNumber + "\">");
         out.print("</form>");
         out.print("</body>");

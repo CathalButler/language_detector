@@ -3,7 +3,7 @@ package ie.gmit.sw;
 /**
  *
  */
-class OutOfPlaceMetric implements Comparable<OutOfPlaceMetric> {
+public class OutOfPlaceMetric implements Comparable<OutOfPlaceMetric> {
     //Member Variables
     private Language lang;
     private int distance;
