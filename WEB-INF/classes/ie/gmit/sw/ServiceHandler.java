@@ -1,7 +1,6 @@
 package ie.gmit.sw;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -9,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,16 +36,19 @@ import java.util.logging.Logger;
 
 public class ServiceHandler extends HttpServlet {
     private String languageDataSet = null; //This variable  is shared by all HTTP requests for the servlet
-    private static int jobNumber = 0; //The number of the task in the async queue
+    private static UUID jobNumber = null; //The number of the task in the async queue
     private File file;
     static BlockingQueue<Request> inQueue = new LinkedBlockingQueue<>();
-    static Map<Integer, Language> outQueue = new ConcurrentHashMap<>();
+    static Map<UUID, Language> outQueue = new ConcurrentHashMap<>();
     private int kmar = 1;
     private DatabaseImpl database = DatabaseImpl.getInstance();
     private static final Logger LOGGER = Logger.getLogger(ServiceHandler.class.getName());
 
 
-    public void init() throws ServletException {
+    /**
+     * Method which is used to init() the servlet
+     */
+    public void init() {
         ServletContext ctx = getServletContext(); //Get a handle on the application context
         languageDataSet = ctx.getInitParameter("LANGUAGE_DATA_SET"); //Reads the value from the <context-param> in web.xml
 
@@ -69,7 +72,14 @@ public class ServiceHandler extends HttpServlet {
         database.resize(databaseNgramSize);
     }//End init()
 
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    /**
+     * Method for GET Requests
+     *
+     * @param req  HTTP Request
+     * @param resp HTTP Response
+     * @throws IOException
+     */
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         LOGGER.info("GET REQUEST");
         resp.setContentType("text/html"); //Output the MIME type
         PrintWriter out = resp.getWriter(); //Write out text. We can write out binary too and change the MIME type...
@@ -88,28 +98,25 @@ public class ServiceHandler extends HttpServlet {
 
 
         if (taskNumber == null) {
-            //Assign a new job to the list
-            taskNumber = new String("T" + jobNumber);
-            //Increment job number
-            jobNumber++;
             //Generate a UUID for each job/task
-//            UUID jobNumber = UUID.randomUUID();
-//            System.out.println(jobNumber.toString());
-            //Process process = new Process(outQueue, inQueue, file);
-            //process.start();
+            jobNumber = UUID.randomUUID();
+            //Assign a new job to the list
+            taskNumber = new String("T" + jobNumber.toString());
+
+            System.out.println(jobNumber);
 
             try {
                 //Add job to in-queue
-                // make a request
-                inQueue.add(new Request(jobNumber, query));
-                // ... maybe do something concurrently ...
-
-                //Start a thread to run the languageDetection class
-                new Thread(new LanguageDetection(kmar, database)).start();
-
+                if (query != null && query.length() > 0) {
+                    inQueue.add(new Request(jobNumber, query));
+                    //Start a thread to run the languageDetection class
+                    new Thread(new LanguageDetection(kmar, database)).start();
+                } else {
+                    out.print("<h3>Please enter a query in the input box.</h3>");
+                }//End if else
             } catch (Exception ie) {
                 ie.printStackTrace();
-            }
+            }//End try catch
 
             //Make a class which will be able to return if the process is complete, try have that class run threads
         } else {
@@ -123,7 +130,7 @@ public class ServiceHandler extends HttpServlet {
         }//end if else
 
 
-        out.print("<H1>Processing request for Job#: " + taskNumber + "</H1>");
+        out.print("<H1>Processing request for Job UUID: " + taskNumber + "</H1>");
         out.print("<div id=\"r\"></div>");
 
         out.print("<font color=\"#993333\"><b>");
@@ -161,7 +168,14 @@ public class ServiceHandler extends HttpServlet {
         out.print("</script>");
     }//End method
 
-    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    /**
+     * Method for POST Request
+     *
+     * @param req  HTTP Request
+     * @param resp HTTP Response
+     * @throws IOException
+     */
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         doGet(req, resp);
     }//End method
 }//End class

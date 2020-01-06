@@ -16,8 +16,9 @@ public class Parser implements Runnable {
     /**
      * Constructor
      *
-     * @param file to build subject database
+     * @param file this file is used to build subject database
      * @param kmar n-gram
+     * @param database instance
      */
     public Parser(String file, int kmar, DatabaseImpl database) {
         this.file = file;

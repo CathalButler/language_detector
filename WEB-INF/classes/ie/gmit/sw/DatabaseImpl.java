@@ -11,10 +11,14 @@ public class DatabaseImpl implements Database {
     private Map<Language, Map<Integer, LanguageEntry>> db = new ConcurrentHashMap<>();
 
 
+    /**
+     * Default Constructor
+     */
     public DatabaseImpl() {
     }
 
     /**
+     * This is used to get an instance of this class when called.
      * Implementation of Singleton design pattern
      *
      * @return database

@@ -1,10 +1,12 @@
 package ie.gmit.sw;
 
+import java.util.UUID;
+
 public class Request {
-    private int jobNumber;
+    private UUID jobNumber;
     private String query;
 
-    public Request(int jobNumber, String query) {
+    public Request(UUID jobNumber, String query) {
         this.jobNumber = jobNumber;
         this.query = query;
     }
@@ -17,11 +19,11 @@ public class Request {
         this.query = query;
     }
 
-    public int getJobNumber() {
+    public UUID getJobNumber() {
         return jobNumber;
     }
 
-    public void setJobNumber(int jobNumber) {
+    public void setJobNumber(UUID jobNumber) {
         this.jobNumber = jobNumber;
     }
 

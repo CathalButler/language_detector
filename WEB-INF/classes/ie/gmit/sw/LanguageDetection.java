@@ -26,10 +26,9 @@ public class LanguageDetection implements Runnable {
     public void run() {
         while (true) {
             try {
-                System.out.println("Assigning job from queue...");
+                System.out.println("Assigning job from queue");
 
                 Request languageDetection = ServiceHandler.inQueue.take();
-                LOGGER.info("fuck you from the language detector");
 
                 //Add to the out queue with job id and the language predication that came back from the language detection
                 ServiceHandler.outQueue.put(languageDetection.getJobNumber(), analysisQuery(languageDetection.getQuery()));
@@ -69,6 +68,7 @@ public class LanguageDetection implements Runnable {
 //        }//End for
 //        //PRINT LANGUAGE
 //        System.out.println(db.getLanguage(queryDb));
+//        System.out.println(database.toString());
 
         return database.getLanguage(queryList);
     }//End method
