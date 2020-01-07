@@ -3,19 +3,18 @@ package ie.gmit.sw;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Class that handles parsing the wili-2018 language file. The file is parsed breaking the language sentence up into
+ * kmars/n-grams and adding them and the language name to a subject database/list
+ * Reference: John Healy - Lecture of the module in GMIT. Online tutorial videos and lecture content.
+ */
+
 //https://www.java67.com/2015/09/thread-safe-singleton-in-java-using-double-checked-locking-pattern.html
 
-public class DatabaseImpl implements Database {
-    //Member Variables
+public class DatabaseImpl implements Database, Resizeable {
+    // === M e m b e r V a r i a b l e s ============================
     private volatile static DatabaseImpl database;
-    private Map<Language, Map<Integer, LanguageEntry>> db = new ConcurrentHashMap<>();
-
-
-    /**
-     * Default Constructor
-     */
-    public DatabaseImpl() {
-    }
+    public Map<Language, Map<Integer, Kmer>> db = new ConcurrentHashMap<>();
 
     /**
      * This is used to get an instance of this class when called.
@@ -30,7 +29,7 @@ public class DatabaseImpl implements Database {
                     return database = new DatabaseImpl();
                 }
             }
-        }
+        }//end if
         return database;
     }//End method
 
@@ -42,7 +41,7 @@ public class DatabaseImpl implements Database {
      */
     @Override
     public void add(CharSequence charSequence, Language language) {
-        Map<Integer, LanguageEntry> langDb = getLanguageEntries(language);
+        Map<Integer, Kmer> langDb = getLanguageEntries(language);
         int kmer = charSequence.hashCode();
         int frequency = 1;
 
@@ -51,7 +50,7 @@ public class DatabaseImpl implements Database {
             frequency += langDb.get(kmer).getFrequency();
         }//End if
         //Override the existing entry with the newly updated one
-        langDb.put(kmer, new LanguageEntry(kmer, frequency));
+        langDb.put(kmer, new Kmer(kmer, frequency));
 
     }//End method
 
@@ -61,14 +60,14 @@ public class DatabaseImpl implements Database {
      * @param language object
      * @return language database
      */
-    private Map<Integer, LanguageEntry> getLanguageEntries(Language language) {
-        Map<Integer, LanguageEntry> langDb;
+    private Map<Integer, Kmer> getLanguageEntries(Language language) {
+        Map<Integer, Kmer> langDb;
         if (db.containsKey(language)) {
             langDb = db.get(language);
         } else {
             langDb = new TreeMap<>();
             db.put(language, langDb);
-        }
+        }//End if else
         return langDb;
     }//End method
 
@@ -82,10 +81,11 @@ public class DatabaseImpl implements Database {
         Set<Language> keys = db.keySet();
 
         for (Language lang : keys) {
-            Map<Integer, LanguageEntry> top = getTopOccurrence(max, lang);
+            Map<Integer, Kmer> top = getTopOccurrence(max, lang);
             db.put(lang, top);
 
         }//End for loop
+        System.out.println("Resize complete : " + db.size());
     }//End method
 
     /**
@@ -96,13 +96,13 @@ public class DatabaseImpl implements Database {
      * @return frequency occurring list
      */
     @Override
-    public Map<Integer, LanguageEntry> getTopOccurrence(int max, Language language) {
-        ConcurrentHashMap<Integer, LanguageEntry> temp = new ConcurrentHashMap<>();
-        List<LanguageEntry> les = new ArrayList<>(db.get(language).values());
+    public Map<Integer, Kmer> getTopOccurrence(int max, Language language) {
+        ConcurrentHashMap<Integer, Kmer> temp = new ConcurrentHashMap<>();
+        List<Kmer> les = new ArrayList<>(db.get(language).values());
         Collections.sort(les);
 
         int rank = 1;
-        for (LanguageEntry le : les) {
+        for (Kmer le : les) {
             // Assign rank, the tree map is ordered so the first entry will be the most fragrant
             le.setRank(rank);
             //Add it to the temp map
@@ -112,7 +112,6 @@ public class DatabaseImpl implements Database {
             //else increment rank
             rank++;
         }//End for loop
-
         return temp;
     }//End method
 
@@ -122,7 +121,7 @@ public class DatabaseImpl implements Database {
      * @param query user query entry
      * @return first language in the Out of place metric list
      */
-    public Language getLanguage(Map<Integer, LanguageEntry> query) {
+    public Language getLanguage(Map<Integer, Kmer> query) {
         TreeSet<OutOfPlaceMetric> oopm = new TreeSet<>();
 
         Set<Language> langs = db.keySet();
@@ -139,13 +138,13 @@ public class DatabaseImpl implements Database {
      * @param subject language
      * @return distance
      */
-    private int getOutOfPlaceDistance(Map<Integer, LanguageEntry> query, Map<Integer, LanguageEntry> subject) {
+    private int getOutOfPlaceDistance(Map<Integer, Kmer> query, Map<Integer, Kmer> subject) {
         //Member Variables
         int distance = 0;
-        Set<LanguageEntry> les = new TreeSet<>(query.values());
+        Set<Kmer> les = new TreeSet<>(query.values());
 
-        for (LanguageEntry q : les) {
-            LanguageEntry s = subject.get(q.getKmer());
+        for (Kmer q : les) {
+            Kmer s = subject.get(q.getKmer());
             if (s == null) {
                 distance += subject.size() + 1;
             } else {
@@ -169,12 +168,13 @@ public class DatabaseImpl implements Database {
             langCount++;
             sb.append(lang.name() + "->\n");
 
-            Collection<LanguageEntry> m = new TreeSet<>(db.get(lang).values());
+            Collection<Kmer> m = new TreeSet<>(db.get(lang).values());
             kmerCount += m.size();
-            for (LanguageEntry le : m) {
+            for (Kmer le : m) {
                 sb.append("\t" + le + "\n");
-            }
-        }
+            }//End for loop
+        }//End for loop
+
         sb.append(kmerCount + " total k-mers in " + langCount + " languages");
         return sb.toString();
     }//End method

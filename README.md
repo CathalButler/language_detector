@@ -20,7 +20,7 @@ Navigate to `localhost:8888/ngrams`
 Navigate to the install location of tomcat and inside the `/webapps` folder drop the ngrams.war file.
 
 Run the command startup command for tomcat found in the bin folder to start tomcat.
-t
+
 Navigate to `localhost:8080/ngrams`
 
 

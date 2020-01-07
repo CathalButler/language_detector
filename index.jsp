@@ -11,23 +11,24 @@
 			<form bgcolor="white" method="POST" action="doProcess">
 				<fieldset>
 					<legend><h3>Specify Details</h3></legend>
-				
-					<b>Select Option:</b>
-						
+
+					<b>Select K-mar:</b>
+
 					<select name="cmbOptions">
-						<option>Option 1</option>
-						<option selected>Option 2</option>
-						<option>Option 3</option>
-					</select>	
+						<option selected>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+					</select>
 					<p/>
 
 					<b>Enter Text :</b><br>
-					<textarea name="query" rows="10" cols="100"  wrap="soft"></textarea>	
+					<textarea name="query" rows="10" cols="100"  wrap="soft"></textarea>
 					<p/>
 
 					<center><input type="submit" value="Process"></center>
-				</fieldset>							
-			</form>	
+				</fieldset>
+			</form>
 
 		</td>
 	</tr>

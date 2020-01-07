@@ -2,9 +2,12 @@ package ie.gmit.sw;
 
 import java.util.Map;
 
+/**
+ * Database interface to be implemented when creating a subject database out of the languages and kmars
+ */
+
 public interface Database {
-    public void add(CharSequence charSequence, Language language);
-    public void resize(int max);
-    public Map<Integer, LanguageEntry> getTopOccurrence(int max, Language language);
-    public Language getLanguage(Map<Integer, LanguageEntry> query);
+    void add(CharSequence charSequence, Language language);
+    Map<Integer, Kmer> getTopOccurrence(int max, Language language);
+    Language getLanguage(Map<Integer, Kmer> query);
 }//End interface
