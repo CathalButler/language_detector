@@ -2,7 +2,9 @@
 ### Cathal Butler | G00346889 | Final Year Software Development
 An Asynchronous Language Detection System
 
-### Environment Setup
+Find project spec [here](https://github.com/butlawr/language_detector/blob/master/oodppAssignment2019.pdf)
+
+### Environment Setups
 Environment setup can be done in two ways, ether install [Tomcat](https://tomcat.apache.org/download-80.cgi) or use a [Docker](https://www.docker.com/) container with tomcat.
 
 ### How to run with Docker
