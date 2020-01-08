@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 /**
  * Class that handles parsing the wili-2018 language file. The file is parsed breaking the language sentence up into
- * kmars/n-grams and adding them and the language name to a subject database/list
+ * k-mars/n-grams and adding them and the language name to a subject database/list
  * @author Cathal Butler
  * Reference: John Healy - Lecture of the module in GMIT. Online tutorial videos and lecture content.
  */

@@ -7,9 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Class that handles parsing the wili-2018 language file. The file is parsed breaking the language sentence up into
  * kmars/n-grams and adding them and the language name to a subject database/list
  * Reference: John Healy - Lecture of the module in GMIT. Online tutorial videos and lecture content.
+ * https://www.java67.com/2015/09/thread-safe-singleton-in-java-using-double-checked-locking-pattern.html
  */
-
-//https://www.java67.com/2015/09/thread-safe-singleton-in-java-using-double-checked-locking-pattern.html
 
 public class DatabaseImpl implements Database, Resizeable {
     // === M e m b e r V a r i a b l e s ============================
@@ -25,16 +24,14 @@ public class DatabaseImpl implements Database, Resizeable {
     public static DatabaseImpl getInstance() {
         if (database == null) {
             synchronized (DatabaseImpl.class) {
-                if (database == null) {
-                    return database = new DatabaseImpl();
-                }
+                if (database == null) return database = new DatabaseImpl();
             }
         }//end if
         return database;
     }//End method
 
     /**
-     * Method to add or update the frequency of a kmer in the map
+     * Method to add or update the frequency of a k-mer in the map
      *
      * @param charSequence a sequence of chars
      * @param language     object
@@ -72,9 +69,9 @@ public class DatabaseImpl implements Database, Resizeable {
     }//End method
 
     /**
-     * Method to resize the amount of top most frequent kmars in a language map.
+     * Method to resize the amount of top most frequent k-mars in a language map.
      *
-     * @param max size of the kmars in a list
+     * @param max size of the k-mars in a list
      */
     @Override
     public void resize(int max) {
@@ -83,15 +80,14 @@ public class DatabaseImpl implements Database, Resizeable {
         for (Language lang : keys) {
             Map<Integer, Kmer> top = getTopOccurrence(max, lang);
             db.put(lang, top);
-
         }//End for loop
         System.out.println("Resize complete : " + db.size());
     }//End method
 
     /**
-     * Method to get the top given number of frequency occurring kmars in a language map.
+     * Method to get the top given number of frequency occurring k-mars in a language map.
      *
-     * @param max      size of the kmars in a list
+     * @param max      size of the k-mars in a list
      * @param language object
      * @return frequency occurring list
      */

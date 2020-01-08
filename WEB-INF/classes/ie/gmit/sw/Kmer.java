@@ -15,7 +15,7 @@ public class Kmer implements Comparable<Kmer> {
     // === M e m b e r V a r i a b l e s ============================
     private int kmer;        // Not using strings, calling hashcode on string
     private int frequency;    // Frequency of occurrence
-    private int rank;        // The Frequency of the kmer in the language
+    private int rank;        // The Frequency of the k-mer in the language
 
     //Constructor
     public Kmer(int kmer, int frequency) {

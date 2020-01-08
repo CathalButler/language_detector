@@ -1,11 +1,17 @@
 ## language_detector
 ### Cathal Butler | G00346889 | Final Year Software Development
-An Asynchronous Language Detection System
+An Asynchronous Language Detection System that builds a language database on the WiLI benchmark dataset. Multiple users 
+can query a language by inputting their own string. 
 
 Find project spec [here](https://github.com/butlawr/language_detector/blob/master/oodppAssignment2019.pdf)
 
 ### Environment Setups
 Environment setup can be done in two ways, ether install [Tomcat](https://tomcat.apache.org/download-80.cgi) or use a [Docker](https://www.docker.com/) container with tomcat.
+
+Place the `wili-2018-Edited.txt` in a directory called `data/` @ the root of your filesystem.
+
+Linux `/data`
+Windows `C:/data`
 
 ### How to run with Docker
 
@@ -24,7 +30,6 @@ Navigate to the install location of tomcat and inside the `/webapps` folder drop
 Run the command startup command for tomcat found in the bin folder to start tomcat.
 
 Navigate to `localhost:8080/ngrams`
-
 
 ### Development & Testing
 This project was developed on my own personal laptop running

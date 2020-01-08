@@ -2,7 +2,6 @@ package ie.gmit.sw;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 /**
  * Class that handles making a language prediction. Requests are read in from the in queue in Service Handler class
@@ -17,7 +16,6 @@ public class LanguageDetection implements Runnable, Resizeable {
     // === M e m b e r V a r i a b l e s ============================
     private int kmar;
     private DatabaseImpl database;
-    private static final Logger LOGGER = Logger.getLogger(ServiceHandler.class.getName());
     private Map<Integer, Kmer> db = new TreeMap<>();
     private Map<Integer, Kmer> queryList = new TreeMap<>();
     private int kmarListSize = 300;
@@ -25,7 +23,7 @@ public class LanguageDetection implements Runnable, Resizeable {
     /**
      * Constructor
      *
-     * @param kmar     kmar size
+     * @param kmar     k-mar size
      * @param database database instance
      */
     public LanguageDetection(int kmar, DatabaseImpl database) {
@@ -34,7 +32,7 @@ public class LanguageDetection implements Runnable, Resizeable {
     }
 
     /**
-     * Method to read in a string query which is then broken into kmars/n-grams then converted into hashcode and the
+     * Method to read in a string query which is then broken into k-mars/n-grams then converted into hashcode and the
      * frequency updated in the list.
      *
      * @param query user query
@@ -69,18 +67,17 @@ public class LanguageDetection implements Runnable, Resizeable {
     public void resize(int max) {
         Set<Integer> keys = queryList.keySet();
 
-        for (Integer entiers : keys) {
+        for (Integer entries : keys) {
             Map<Integer, Kmer> top = getTopOccurrence(max);
-            db.put(entiers, top.get(entiers));
-
+            db.put(entries, top.get(entries));
         }//End for loop
         System.out.println("Resize complete : " + queryList.size());
     }//End resize
 
     /**
-     * Method to get the top given number of frequency occurring kmars in a language map.
+     * Method to get the top given number of frequency occurring k-mars in a language map.
      *
-     * @param max size of the kmars in a list
+     * @param max size of the k-mars in a list
      * @return frequency occurring list
      */
     public Map<Integer, Kmer> getTopOccurrence(int max) {
@@ -109,7 +106,6 @@ public class LanguageDetection implements Runnable, Resizeable {
                 System.out.println("Assigning request from queue");
                 //Run a return from the in queue
                 Request languageDetection = ServiceHandler.inQueue.take();
-
                 //Add to the out queue with job id and the language predication that came back from the language detection
                 System.out.println("Result complete, adding to the complete queue");
                 ServiceHandler.outQueue.put(languageDetection.getJobNumber(), analysisQuery(languageDetection.getQuery()));
